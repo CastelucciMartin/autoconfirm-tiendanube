@@ -1,0 +1,18 @@
+name: Mantener activo
+# GitHub apaga los programas programados de un repositorio sin cambios en 60 días. Esto deja un cambio mínimo cada mes.
+on:
+  schedule:
+    - cron: '0 12 1 * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  latido:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          date -u > .latido
+          git config user.name "autoconfirmador"
+          git config user.email "autoconfirmador@users.noreply.github.com"
+          git add .latido && git commit -m "Latido mensual" && git push

@@ -1,0 +1,9 @@
+node_modules/
+perfil/
+estado/
+logs/
+config.json
+*.log
+explorar.js
+capturar_pago.js
+probar_lista.js

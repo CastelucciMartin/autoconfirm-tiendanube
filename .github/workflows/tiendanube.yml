@@ -1,0 +1,45 @@
+name: Autoconfirmador Tiendanube
+
+# Cada 5 minutos (GitHub puede demorarlo unos minutos). Dentro de cada ejecución revisa 4 veces, una por minuto.
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: tiendanube
+  cancel-in-progress: false
+
+jobs:
+  confirmar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Instalar
+        run: npm install --no-audit --no-fund
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+      - name: Recuperar la última sesión
+        uses: actions/cache/restore@v4
+        with:
+          path: estado/sesion.json
+          key: tn-sesion-${{ github.run_id }}
+          restore-keys: tn-sesion-
+      - name: Confirmar pedidos pagados
+        run: node worker.js --una-vez
+        env:
+          TN_WEBAPP: ${{ secrets.TN_WEBAPP }}
+          TN_CLAVE: ${{ secrets.TN_CLAVE }}
+          TN_TIENDA: ${{ secrets.TN_TIENDA }}
+          TN_SESION: ${{ secrets.TN_SESION }}
+          TN_VUELTAS: 4
+      - name: Guardar la sesión renovada
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: estado/sesion.json
+          key: tn-sesion-${{ github.run_id }}
